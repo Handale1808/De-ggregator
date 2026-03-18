@@ -6,7 +6,6 @@ import type { SearchResult } from "../types";
 import SettingsForm from "./components/SettingsForm";
 import ResultsList from "./components/ResultsList";
 import ErrorMessage from "./components/ErrorMessage";
-import UsageCounter from "./components/UsageCounter";
 import DirectResult from "./components/DirectResult";
 import SearchPrompt from "./components/SearchPrompt";
 
@@ -283,7 +282,6 @@ export default function App() {
         </p>
       </div>
       <ResultsList results={results} onOpen={handleOpenUrl} />
-      <UsageCounter />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 // src/background/serviceWorker.ts
 
 import { getSettings } from "../utils/storage";
-import { incrementQuota, getRemainingQuota } from "../utils/quota";
 import type { MessageType, SearchResult } from "../types";
 
 const searchSerper = async (
@@ -151,14 +150,10 @@ chrome.runtime.onMessage.addListener(
           await setCachedResults(headline, searchResults);
         }
 
-        await incrementQuota();
-        const remaining = await getRemainingQuota();
-
         sendResponse({
           type: "SEARCH_RESULTS",
           results: searchResults,
           serperCredits,
-          quotaUsed: 100 - remaining,
         });
       } catch (error) {
         const errMessage =

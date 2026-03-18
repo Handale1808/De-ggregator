@@ -1,6 +1,6 @@
 // src/utils/storage.ts
 
-import type { ExtensionSettings, QuotaData } from '../types'
+import type { ExtensionSettings } from '../types'
 
 export const getSettings = (): Promise<ExtensionSettings | null> => {
   return new Promise((resolve) => {
@@ -23,25 +23,5 @@ export const clearSettings = async (): Promise<void> => {
 export const saveSettings = (settings: ExtensionSettings): Promise<void> => {
   return new Promise((resolve) => {
     chrome.storage.local.set(settings, () => resolve())
-  })
-}
-
-export const getQuota = (): Promise<QuotaData> => {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['quotaCount', 'quotaDate'], (result) => {
-      resolve({
-        count: (result.quotaCount as number) ?? 0,
-        date: (result.quotaDate as string) ?? '',
-      })
-    })
-  })
-}
-
-export const saveQuota = (data: QuotaData): Promise<void> => {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({
-      quotaCount: data.count,
-      quotaDate: data.date,
-    }, () => resolve())
   })
 }

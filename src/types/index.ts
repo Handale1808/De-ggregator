@@ -16,11 +16,6 @@ export interface ExtensionSettings {
   apiKey: string;
 }
 
-export interface QuotaData {
-  count: number;
-  date: string;
-}
-
 export type MessageType =
   | { type: "SEARCH"; tabId: number }
   | { type: "SEARCH_RESULTS"; results: SearchResult[]; quotaUsed: number }
