@@ -14,6 +14,10 @@ export const getSettings = (): Promise<ExtensionSettings | null> => {
   })
 }
 
+export const clearSettings = async (): Promise<void> => {
+  await chrome.storage.local.remove('settings')
+}
+
 export const saveSettings = (settings: ExtensionSettings): Promise<void> => {
   return new Promise((resolve) => {
     chrome.storage.local.set(settings, () => resolve())

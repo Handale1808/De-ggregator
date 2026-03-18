@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSettings, getQuota } from "../utils/storage";
+import { getSettings, getQuota, clearSettings } from "../utils/storage";
 import type { SearchResult, QuotaData } from "../types";
 import SettingsForm from "./components/SettingsForm";
 import ResultsList from "./components/ResultsList";
@@ -10,7 +10,7 @@ type AppState = "loading" | "settings" | "searching" | "results" | "error";
 
 declare global {
   interface Window {
-    __searchInitiated?: boolean
+    __searchInitiated?: boolean;
   }
 }
 
@@ -120,12 +120,20 @@ export default function App() {
     return <SettingsForm onSaved={handleSettingsSaved} />;
   }
 
+  const handleInvalidKey = async () => {
+    await clearSettings();
+    window.__searchInitiated = false;
+    setAppState("settings");
+  };
+
   if (appState === "error") {
     return (
       <ErrorMessage
         error={error}
         onRetry={handleRetry}
-        onOpenSettings={handleSettingsSaved}
+        onOpenSettings={
+          error === "INVALID_KEY" ? handleInvalidKey : handleSettingsSaved
+        }
       />
     );
   }
