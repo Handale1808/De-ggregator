@@ -3,15 +3,23 @@
   "name": "De-aggregator",
   "version": "1.0.0",
   "description": "Find the original source of aggregated news articles",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
-    "default_popup": "src/popup/index.html"
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
-  "host_permissions": [
-  "https://google.serper.dev/*"
-]
+  "host_permissions": ["https://google.serper.dev/*"]
 }

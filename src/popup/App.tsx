@@ -230,7 +230,7 @@ export default function App() {
             De-aggregator
           </h1>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Original source found
+            Because fuck searching yourself
           </p>
         </div>
         <DirectResult
