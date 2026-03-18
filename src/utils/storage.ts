@@ -3,10 +3,10 @@ import type { ExtensionSettings, QuotaData } from '../types'
 export const getSettings = (): Promise<ExtensionSettings | null> => {
   return new Promise((resolve) => {
     chrome.storage.local.get(['apiKey', 'searchEngineId'], (result) => {
-      if (result.apiKey && result.searchEngineId) {
+      if (result.apiKey) {
         resolve({
           apiKey: result.apiKey as string,
-          searchEngineId: result.searchEngineId as string,
+          searchEngineId: (result.searchEngineId as string) ?? '',
         })
       } else {
         resolve(null)

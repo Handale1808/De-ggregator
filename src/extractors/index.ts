@@ -11,6 +11,7 @@ const EXTRACTOR_MAP: Record<string, () => string> = {
   'news.yahoo.com': extractYahoo,
   'www.yahoo.com': extractYahoo,
   'yahoo.com': extractYahoo,
+  'health.yahoo.com': extractYahoo,
   'www.yahoo.com/news': extractYahoo,
   'www.msn.com': extractMsn,
   'msn.com': extractMsn,
