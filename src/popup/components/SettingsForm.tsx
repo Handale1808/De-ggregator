@@ -8,13 +8,12 @@ interface Props {
 
 export default function SettingsForm({ onSaved }: Props) {
   const [apiKey, setApiKey] = useState('')
-  const [searchEngineId, setSearchEngineId] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   const handleSave = async () => {
-    if (!apiKey.trim() || !searchEngineId.trim()) {
-      setError('Both fields are required')
+    if (!apiKey.trim()) {
+      setError('API key is required')
       return
     }
 
@@ -23,7 +22,7 @@ export default function SettingsForm({ onSaved }: Props) {
 
     const settings: ExtensionSettings = {
       apiKey: apiKey.trim(),
-      searchEngineId: searchEngineId.trim(),
+      searchEngineId: '',
     }
 
     await saveSettings(settings)
@@ -37,32 +36,19 @@ export default function SettingsForm({ onSaved }: Props) {
         De-aggregator
       </h1>
       <p className="text-xs text-gray-500 mb-4">
-        Enter your Google API credentials to get started.
+        Enter your Serper.dev API key to get started.
       </p>
 
       <div className="mb-3">
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          API Key
+          Serper API Key
         </label>
         <input
           type="password"
           value={apiKey}
           onChange={e => setApiKey(e.target.value)}
-          placeholder="Paste your Google API key"
-          className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-500"
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="block text-xs font-medium text-gray-700 mb-1">
-          Search Engine ID
-        </label>
-        <input
-          type="password"
-          value={searchEngineId}
-          onChange={e => setSearchEngineId(e.target.value)}
-          placeholder="Paste your Search Engine ID"
-          className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-500"
+          placeholder="Paste your Serper API key"
+          className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-600"
         />
       </div>
 
@@ -79,7 +65,7 @@ export default function SettingsForm({ onSaved }: Props) {
       </button>
 
       <p className="text-xs text-gray-400 mt-3">
-        Your credentials are stored locally and never shared.
+        Your API key is stored locally and never shared.
       </p>
     </div>
   )

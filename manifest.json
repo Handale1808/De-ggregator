@@ -10,13 +10,8 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": [
-    "storage",
-    "activeTab",
-    "scripting",
-    "tabs"
-  ],
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": [
-    "https://www.googleapis.com/*"
-  ]
+  "https://google.serper.dev/*"
+]
 }
