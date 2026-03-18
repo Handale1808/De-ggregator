@@ -1,3 +1,5 @@
+// src/background/serviceWorker.ts
+
 import { getSettings } from "../utils/storage";
 import { incrementQuota, getRemainingQuota } from "../utils/quota";
 import type { MessageType, SearchResult } from "../types";

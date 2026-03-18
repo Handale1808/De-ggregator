@@ -1,3 +1,5 @@
+// src/popup/components/ResultsList.tsx
+
 import type { SearchResult } from "../../types";
 import ResultItem from "./ResultItem";
 

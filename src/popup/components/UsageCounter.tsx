@@ -1,3 +1,5 @@
+// src/popup/components/UsageCounter.tsx
+
 export default function UsageCounter() {
   return (
     <div

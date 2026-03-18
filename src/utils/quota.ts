@@ -1,3 +1,5 @@
+// src/utils/quota.ts
+
 import { getQuota, saveQuota } from './storage'
 
 const DAILY_LIMIT = 100

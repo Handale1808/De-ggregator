@@ -1,3 +1,5 @@
+// src/extractors/yahoo.ts
+
 export const extractYahoo = (): string => {
   const meta = document.querySelector('meta[property="og:site_name"]')
   if (meta) {

@@ -1,3 +1,5 @@
+// src/popup/App.tsx
+
 import { useEffect, useState } from "react";
 import { getSettings, clearSettings } from "../utils/storage";
 import type { SearchResult } from "../types";

@@ -1,3 +1,5 @@
+// src/popup/components/SettingsForm.tsx
+
 import { useState } from "react";
 import { saveSettings } from "../../utils/storage";
 import type { ExtensionSettings } from "../../types";

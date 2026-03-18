@@ -1,3 +1,5 @@
+// src/extractors/index.ts
+
 import { extractYahoo } from './yahoo'
 import { extractMsn } from './msn'
 import { extractAol } from './aol'

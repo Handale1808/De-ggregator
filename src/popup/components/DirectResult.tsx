@@ -1,3 +1,5 @@
+// src/popup/components/DirectResult.tsx
+
 import type { SearchResult } from "../../types";
 import ResultItem from "./ResultItem";
 import SearchActions from "./SearchActions";

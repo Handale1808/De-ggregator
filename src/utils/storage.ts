@@ -1,3 +1,5 @@
+// src/utils/storage.ts
+
 import type { ExtensionSettings, QuotaData } from '../types'
 
 export const getSettings = (): Promise<ExtensionSettings | null> => {

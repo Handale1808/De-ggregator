@@ -1,3 +1,5 @@
+// src/extractors/newsbreak.ts
+
 export const extractNewsBreak = (): string => {
   const sourceEl = document.querySelector(
     '.source-name, .publisher-name, [class*="publisher"], [class*="source"], .article-source a'
