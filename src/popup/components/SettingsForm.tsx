@@ -40,13 +40,13 @@ export default function SettingsForm({ onSaved }: Props) {
 
       <div className="mb-3">
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Jina API Key
+          Serper API Key
         </label>
         <input
           type="text"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="Paste your Jina API Key"
+          placeholder="Paste your Serper API Key"
           className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-600"
         />
       </div>

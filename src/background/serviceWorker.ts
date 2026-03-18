@@ -2,40 +2,34 @@ import { getSettings } from "../utils/storage";
 import { incrementQuota, getRemainingQuota } from "../utils/quota";
 import type { SearchResult, MessageType } from "../types";
 
-const searchJina = async (
+const searchSerper = async (
   query: string,
   apiKey: string,
 ): Promise<SearchResult[]> => {
-  const url = `https://s.jina.ai/?q=${encodeURIComponent(query)}`;
-
-  const response = await fetch(url, {
-    method: "GET",
+  const response = await fetch("https://google.serper.dev/search", {
+    method: "POST",
     headers: {
-      "Accept": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
+      "X-API-KEY": apiKey,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ q: query, num: 5 }),
   });
 
   if (response.status === 401) throw new Error("INVALID_KEY");
   if (response.status === 429) throw new Error("QUOTA_EXCEEDED");
-  if (!response.ok) {
-    const text = await response.text();
-    console.log("Jina error status:", response.status, "body:", text);
-    throw new Error("SEARCH_FAILED");
-  }
+  if (!response.ok) throw new Error("SEARCH_FAILED");
 
   const data = await response.json();
 
-  if (!data.data || data.data.length === 0) return [];
+  if (!data.organic || data.organic.length === 0) return [];
 
-  return data.data.slice(0, 5).map((item: {
-    title: string;
-    url: string;
-  }) => ({
-    title: item.title,
-    domain: new URL(item.url).hostname,
-    url: item.url,
-  }));
+  return data.organic
+    .slice(0, 5)
+    .map((item: { title: string; displayLink: string; link: string }) => ({
+      title: item.title,
+      domain: item.displayLink,
+      url: item.link,
+    }));
 };
 
 const extractFromPage = async () => {
@@ -187,13 +181,13 @@ chrome.runtime.onMessage.addListener(
           ? `"${extracted.headline}" "${normalisedPublisher}"`
           : `"${extracted.headline}"`;
 
-        let searchResults = await searchJina(quotedQuery, settings.apiKey);
+        let searchResults = await searchSerper(quotedQuery, settings.apiKey);
 
         if (searchResults.length === 0) {
           const fallbackQuery = normalisedPublisher
             ? `${extracted.headline} ${normalisedPublisher}`
             : extracted.headline;
-          searchResults = await searchJina(fallbackQuery, settings.apiKey);
+          searchResults = await searchSerper(fallbackQuery, settings.apiKey);
         }
 
         await incrementQuota();
