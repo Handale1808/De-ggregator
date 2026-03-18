@@ -35,7 +35,7 @@ export default function ErrorMessage({
       case "NOT_SUPPORTED":
         return {
           title: "Site not supported",
-          body: "This page is not a recognised news aggregator. Open an article on Yahoo News, MSN, Google News, Bing News, AOL, NewsBreak, Ground News, or NewsNow.",
+          body: "This page is not a recognised news aggregator. Open an article on Yahoo News, MSN, Google News, AOL, NewsBreak, or NewsNow.",
           primaryAction: null,
           showSettingsLink: true,
         };
