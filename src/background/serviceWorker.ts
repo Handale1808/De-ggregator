@@ -1,6 +1,6 @@
 import { getSettings } from "../utils/storage";
 import { incrementQuota, getRemainingQuota } from "../utils/quota";
-import type { SearchResult, MessageType } from "../types";
+import type { MessageType, SearchResult } from "../types";
 
 const searchSerper = async (
   query: string,
@@ -20,8 +20,6 @@ const searchSerper = async (
   if (!response.ok) throw new Error("SEARCH_FAILED");
 
   const data = await response.json();
-  console.log("Serper response keys:", Object.keys(data));
-
   const credits = typeof data.credits === "number" ? data.credits : null;
 
   if (!data.organic || data.organic.length === 0)
@@ -48,115 +46,8 @@ const setCachedResults = async (
   });
 };
 
-const extractFromPage = async () => {
-  const SUPPORTED = [
-    "news.yahoo.com",
-    "www.yahoo.com",
-    "yahoo.com",
-    "health.yahoo.com",
-    "finance.yahoo.com",
-    "sports.yahoo.com",
-    "entertainment.yahoo.com",
-    "www.msn.com",
-    "msn.com",
-    "news.google.com",
-    "www.bing.com",
-    "bing.com",
-    "www.aol.com",
-    "aol.com",
-    "www.newsbreak.com",
-    "newsbreak.com",
-    "ground.news",
-    "www.ground.news",
-    "www.newsnow.co.uk",
-    "newsnow.co.uk",
-  ];
-
-  const hostname = window.location.hostname;
-  if (!SUPPORTED.includes(hostname)) return null;
-
-  const isMsn = hostname.includes("msn.com");
-
-  if (isMsn) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const providerEl = document.querySelector('[data-t*="c.hl"]');
-    if (providerEl) {
-      try {
-        const dataT = JSON.parse(providerEl.getAttribute("data-t") ?? "{}");
-        const headline = (dataT["c.hl"] as string | undefined)?.trim() ?? "";
-        const publisher = (dataT["c.b"] as string | undefined)?.trim() ?? "";
-
-        return { headline, publisher };
-      } catch {
-        // fall through to generic extraction
-      }
-    }
-  }
-
-  const h1Elements = document.querySelectorAll("h1");
-  let headline = "";
-  h1Elements.forEach((el) => {
-    const text = el.textContent?.trim() ?? "";
-    if (text.length > headline.length) headline = text;
-  });
-
-  if (!headline || headline.length < 10) {
-    headline = document.querySelector("h2")?.textContent?.trim() ?? "";
-  }
-  if (!headline || headline.length < 10) {
-    headline = document.title?.trim() ?? "";
-  }
-
-  let publisher = "";
-
-  const meta = document.querySelector('meta[property="og:site_name"]');
-  const metaContent = meta?.getAttribute("content") ?? "";
-  const metaLower = metaContent.toLowerCase();
-  const aggregatorNames = [
-    "yahoo",
-    "msn",
-    "google news",
-    "bing",
-    "aol",
-    "newsbreak",
-    "ground news",
-    "newsnow",
-    "microsoft",
-  ];
-  if (metaContent && !aggregatorNames.some((n) => metaLower.includes(n))) {
-    publisher = metaContent;
-  }
-
-  if (!publisher) {
-    const byline = document.querySelector(
-      ".caas-author-link, .provider-name, .source-name, .publisher-name, .authortext, .source, .SourceLink, .displayProvider, .source-title, .publication-name, .story-source, .nn-source, .feed-item-source",
-    );
-    if (byline?.textContent) publisher = byline.textContent.trim();
-  }
-
-  if (!publisher) {
-    const canonical = document.querySelector('link[rel="canonical"]');
-    const href = canonical?.getAttribute("href") ?? "";
-    if (href) {
-      try {
-        const u = new URL(href);
-        const hostBase = hostname.replace("www.", "").split(".")[0];
-        if (!u.hostname.includes(hostBase)) {
-          publisher = u.hostname.replace("www.", "");
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-
-  return { headline, publisher };
-};
-
 chrome.runtime.onMessage.addListener(
   (message: MessageType, _sender, sendResponse) => {
-    console.log("Service worker received message:", message);
     if (message.type !== "SEARCH") return;
 
     const tabId = message.tabId;
@@ -169,48 +60,93 @@ chrome.runtime.onMessage.addListener(
           return;
         }
 
-        const results = await chrome.scripting.executeScript({
+        await chrome.scripting.executeScript({
           target: { tabId },
-          func: extractFromPage,
+          files: ["content.js"],
           world: "MAIN",
         });
 
-        console.log("Script execution results:", JSON.stringify(results));
+        const readResults = await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () =>
+            (window as Window & { __deaggResult?: unknown }).__deaggResult ??
+            null,
+          world: "MAIN",
+        });
 
-        const extracted = results?.[0]?.result as {
+        const extracted = readResults?.[0]?.result as {
           headline: string;
           publisher: string;
+          directUrl: string | null;
         } | null;
-        console.log("Extracted data:", JSON.stringify(extracted));
 
         if (!extracted) {
-          console.log("No extracted data, sending NOT_SUPPORTED");
           sendResponse({ type: "NOT_SUPPORTED" });
           return;
         }
 
-        const normalisedPublisher = extracted.publisher
+        if (extracted.directUrl) {
+          sendResponse({
+            type: "DIRECT_RESULT",
+            url: extracted.directUrl,
+            headline: extracted.headline,
+            publisher: extracted.publisher,
+          });
+          return;
+        }
+
+        sendResponse({
+          type: "NO_DIRECT_RESULT",
+          headline: extracted.headline,
+          publisher: extracted.publisher,
+        });
+      } catch (error) {
+        const errMessage =
+          error instanceof Error ? error.message : "UNKNOWN_ERROR";
+        sendResponse({ type: "SEARCH_ERROR", error: errMessage });
+      }
+    })();
+
+    return true;
+  },
+);
+
+chrome.runtime.onMessage.addListener(
+  (message: MessageType, _sender, sendResponse) => {
+    if (message.type !== "SEARCH_WITH_CONTEXT") return;
+
+    (async () => {
+      try {
+        const settings = await getSettings();
+        if (!settings) {
+          sendResponse({ type: "SEARCH_ERROR", error: "NO_SETTINGS" });
+          return;
+        }
+
+        const { headline, publisher } = message;
+
+        const normalisedPublisher = publisher
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
 
         const quotedQuery = normalisedPublisher
-          ? `"${extracted.headline}" "${normalisedPublisher}"`
-          : `"${extracted.headline}"`;
+          ? `"${headline}" "${normalisedPublisher}"`
+          : `"${headline}"`;
 
         let { results: searchResults, credits: serperCredits } =
           await searchSerper(quotedQuery, settings.apiKey);
 
         if (searchResults.length === 0) {
           const fallbackQuery = normalisedPublisher
-            ? `${extracted.headline} ${normalisedPublisher}`
-            : extracted.headline;
+            ? `${headline} ${normalisedPublisher}`
+            : headline;
           const fallback = await searchSerper(fallbackQuery, settings.apiKey);
           searchResults = fallback.results;
           serperCredits = fallback.credits;
         }
 
         if (searchResults.length > 0) {
-          await setCachedResults(extracted.headline, searchResults);
+          await setCachedResults(headline, searchResults);
         }
 
         await incrementQuota();
@@ -223,7 +159,6 @@ chrome.runtime.onMessage.addListener(
           quotaUsed: 100 - remaining,
         });
       } catch (error) {
-        console.log("Service worker error:", error);
         const errMessage =
           error instanceof Error ? error.message : "UNKNOWN_ERROR";
         sendResponse({ type: "SEARCH_ERROR", error: errMessage });

@@ -22,9 +22,47 @@ const getResult = (): ExtractedData | null => {
 
   const publisher = extractPublisher(hostname)
 
-  const result: ExtractedData = { headline, publisher }
+  // Step 1 — canonical tag check
+  let directUrl: string | null = null
 
-  // Cache result on window so re-injection returns the same value
+  const canonicalEl = document.querySelector('link[rel="canonical"]')
+  const canonicalHref = canonicalEl?.getAttribute('href') ?? ''
+  if (canonicalHref) {
+    try {
+      const canonicalUrl = new URL(canonicalHref, window.location.origin)
+      if (canonicalUrl.hostname !== hostname) {
+        directUrl = canonicalUrl.href
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Step 2 — article link heuristic (only if no canonical found)
+  if (!directUrl) {
+    const articleKeywords = ['/news/', '/article/', '/story/', '/post/']
+    const anchors = Array.from(document.querySelectorAll('a[href]'))
+    for (const anchor of anchors) {
+      const href = anchor.getAttribute('href') ?? ''
+      try {
+        const u = new URL(href, window.location.origin)
+        if (u.hostname === hostname) continue
+        const pathname = u.pathname.toLowerCase()
+        if (
+          pathname.length > 30 &&
+          articleKeywords.some((kw) => pathname.includes(kw))
+        ) {
+          directUrl = u.href
+          break
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const result: ExtractedData = { headline, publisher, directUrl }
+
   ;(window as Window & { __deaggResult?: ExtractedData }).__deaggResult = result
 
   return result

@@ -5,8 +5,17 @@ import SettingsForm from "./components/SettingsForm";
 import ResultsList from "./components/ResultsList";
 import ErrorMessage from "./components/ErrorMessage";
 import UsageCounter from "./components/UsageCounter";
+import DirectResult from "./components/DirectResult";
+import SearchPrompt from "./components/SearchPrompt";
 
-type AppState = "loading" | "settings" | "searching" | "results" | "error";
+type AppState =
+  | "loading"
+  | "settings"
+  | "searching"
+  | "results"
+  | "error"
+  | "direct"
+  | "no_direct";
 
 declare global {
   interface Window {
@@ -18,6 +27,11 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>("loading");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [error, setError] = useState("");
+  const [directUrl, setDirectUrl] = useState("");
+  const [searchContext, setSearchContext] = useState<{
+    headline: string;
+    publisher: string;
+  } | null>(null);
 
   const runSearch = async () => {
     if (window.__searchInitiated) return;
@@ -39,6 +53,65 @@ export default function App() {
 
     chrome.runtime.sendMessage(
       { type: "SEARCH", tabId: tab.id },
+
+      (response: any) => {
+        if (!response) {
+          setError("UNKNOWN_ERROR");
+          setAppState("error");
+          return;
+        }
+
+        if (response.type === "DIRECT_RESULT") {
+          setDirectUrl(response.url);
+          setSearchContext({
+            headline: response.headline,
+            publisher: response.publisher,
+          });
+          setAppState("direct");
+          return;
+        }
+
+        if (response.type === "NO_DIRECT_RESULT") {
+          setSearchContext({
+            headline: response.headline,
+            publisher: response.publisher,
+          });
+          setAppState("no_direct");
+          return;
+        }
+
+        if (response.type === "SEARCH_RESULTS") {
+          setResults(response.results);
+          setAppState("results");
+          return;
+        }
+
+        if (response.type === "NOT_SUPPORTED") {
+          setError("NOT_SUPPORTED");
+          setAppState("error");
+          return;
+        }
+
+        if (response.type === "SEARCH_ERROR") {
+          setError(response.error);
+          setAppState("error");
+          return;
+        }
+      },
+    );
+  };
+
+  const runSerperSearch = () => {
+    if (!searchContext) return;
+    setAppState("searching");
+
+    chrome.runtime.sendMessage(
+      {
+        type: "SEARCH_WITH_CONTEXT",
+        tabId: 0,
+        headline: searchContext.headline,
+        publisher: searchContext.publisher,
+      },
       (response: any) => {
         if (!response) {
           setError("UNKNOWN_ERROR");
@@ -48,14 +121,7 @@ export default function App() {
 
         if (response.type === "SEARCH_RESULTS") {
           setResults(response.results);
-          
           setAppState("results");
-          return;
-        }
-
-        if (response.type === "NOT_SUPPORTED") {
-          setError("NOT_SUPPORTED");
-          setAppState("error");
           return;
         }
 
@@ -138,6 +204,47 @@ export default function App() {
           error === "INVALID_KEY" ? handleInvalidKey : handleSettingsSaved
         }
       />
+    );
+  }
+
+  if (appState === "direct") {
+    return (
+      <div className="w-80" style={{ backgroundColor: "var(--bg-base)" }}>
+        <div
+          className="px-3 py-2"
+          style={{ borderBottom: "1px solid var(--border-dim)" }}
+        >
+          <h1
+            className="text-xs font-semibold tracking-widest uppercase"
+            style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
+          >
+            De-aggregator
+          </h1>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Original source found
+          </p>
+        </div>
+        <DirectResult url={directUrl} onSearch={runSerperSearch} />
+      </div>
+    );
+  }
+
+  if (appState === "no_direct") {
+    return (
+      <div className="w-80" style={{ backgroundColor: "var(--bg-base)" }}>
+        <div
+          className="px-3 py-2"
+          style={{ borderBottom: "1px solid var(--border-dim)" }}
+        >
+          <h1
+            className="text-xs font-semibold tracking-widest uppercase"
+            style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
+          >
+            De-aggregator
+          </h1>
+        </div>
+        <SearchPrompt onSearch={runSerperSearch} />
+      </div>
     );
   }
 
