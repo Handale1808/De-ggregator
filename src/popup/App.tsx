@@ -134,6 +134,15 @@ export default function App() {
     );
   };
 
+  const handleFreeSearch = () => {
+    if (!searchContext) return;
+    const query = [searchContext.headline, searchContext.publisher]
+      .filter(Boolean)
+      .join(" ");
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&tbs=nws`;
+    chrome.tabs.create({ url: searchUrl });
+  };
+
   const handleOpenUrl = (url: string) => {
     chrome.tabs.create({ url });
   };
@@ -224,7 +233,11 @@ export default function App() {
             Original source found
           </p>
         </div>
-        <DirectResult url={directUrl} onSearch={runSerperSearch} />
+        <DirectResult
+          url={directUrl}
+          onSearchCredits={runSerperSearch}
+          onSearchFree={handleFreeSearch}
+        />
       </div>
     );
   }
@@ -243,7 +256,10 @@ export default function App() {
             De-aggregator
           </h1>
         </div>
-        <SearchPrompt onSearch={runSerperSearch} />
+        <SearchPrompt
+          onSearchCredits={runSerperSearch}
+          onSearchFree={handleFreeSearch}
+        />
       </div>
     );
   }
