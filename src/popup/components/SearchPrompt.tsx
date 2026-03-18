@@ -1,3 +1,5 @@
+// src/popup/components/SearchPrompt.tsx
+
 import SearchActions from "./SearchActions";
 
 interface Props {

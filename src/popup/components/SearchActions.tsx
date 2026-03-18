@@ -1,3 +1,5 @@
+// src/popup/components/SearchActions.tsx
+
 interface Props {
   onSearchFree: () => void;
   onSearchCredits: () => void;

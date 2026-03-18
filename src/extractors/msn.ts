@@ -1,3 +1,5 @@
+// src/extractors/msn.ts
+
 export const extractMsn = (): string => {
   const providerEl = document.querySelector('[data-t*="c.b"]');
   if (providerEl) {

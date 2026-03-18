@@ -1,3 +1,5 @@
+// src/types/index.ts
+
 export interface SearchResult {
   title: string;
   domain: string;
@@ -12,11 +14,6 @@ export interface ExtractedData {
 
 export interface ExtensionSettings {
   apiKey: string;
-}
-
-export interface QuotaData {
-  count: number;
-  date: string;
 }
 
 export type MessageType =

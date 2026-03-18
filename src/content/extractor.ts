@@ -1,3 +1,5 @@
+// src/content/extractor.ts
+
 import { extractPublisher, isSupportedSite } from '../extractors'
 import type { ExtractedData } from '../types'
 

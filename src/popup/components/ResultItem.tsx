@@ -1,3 +1,5 @@
+// src/popup/components/ResultItem.tsx
+
 import { useState } from "react";
 import type { SearchResult } from "../../types";
 

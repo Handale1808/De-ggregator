@@ -1,3 +1,5 @@
+// src/popup/components/ErrorMessage.tsx
+
 interface Props {
   error: string;
   onRetry?: () => void;
