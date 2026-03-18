@@ -5,7 +5,7 @@ import type { SearchResult, MessageType } from "../types";
 const searchSerper = async (
   query: string,
   apiKey: string,
-): Promise<SearchResult[]> => {
+): Promise<{ results: SearchResult[]; credits: number | null }> => {
   const response = await fetch("https://google.serper.dev/search", {
     method: "POST",
     headers: {
@@ -20,37 +20,22 @@ const searchSerper = async (
   if (!response.ok) throw new Error("SEARCH_FAILED");
 
   const data = await response.json();
+  console.log("Serper response keys:", Object.keys(data));
 
-  if (!data.organic || data.organic.length === 0) return [];
+  const credits = typeof data.credits === "number" ? data.credits : null;
 
-  return data.organic
+  if (!data.organic || data.organic.length === 0)
+    return { results: [], credits };
+
+  const results = data.organic
     .slice(0, 5)
     .map((item: { title: string; displayLink: string; link: string }) => ({
       title: item.title,
       domain: item.displayLink,
       url: item.link,
     }));
-};
 
-const getCachedResults = async (
-  headline: string,
-): Promise<SearchResult[] | null> => {
-  const key = `cache_${headline.slice(0, 100)}`;
-  const stored = await chrome.storage.local.get(key);
-  if (!stored[key]) return null;
-
-  const { results, timestamp } = stored[key] as {
-    results: SearchResult[];
-    timestamp: number;
-  };
-
-  const oneDayMs = 24 * 60 * 60 * 1000;
-  if (Date.now() - timestamp > oneDayMs) {
-    await chrome.storage.local.remove(key);
-    return null;
-  }
-
-  return results;
+  return { results, credits };
 };
 
 const setCachedResults = async (
@@ -212,24 +197,16 @@ chrome.runtime.onMessage.addListener(
           ? `"${extracted.headline}" "${normalisedPublisher}"`
           : `"${extracted.headline}"`;
 
-        const cached = await getCachedResults(extracted.headline);
-
-        if (cached) {
-          sendResponse({
-            type: "SEARCH_RESULTS",
-            results: cached,
-            quotaUsed: 100 - (await getRemainingQuota()),
-          });
-          return;
-        }
-
-        let searchResults = await searchSerper(quotedQuery, settings.apiKey);
+        let { results: searchResults, credits: serperCredits } =
+          await searchSerper(quotedQuery, settings.apiKey);
 
         if (searchResults.length === 0) {
           const fallbackQuery = normalisedPublisher
             ? `${extracted.headline} ${normalisedPublisher}`
             : extracted.headline;
-          searchResults = await searchSerper(fallbackQuery, settings.apiKey);
+          const fallback = await searchSerper(fallbackQuery, settings.apiKey);
+          searchResults = fallback.results;
+          serperCredits = fallback.credits;
         }
 
         if (searchResults.length > 0) {
@@ -242,6 +219,7 @@ chrome.runtime.onMessage.addListener(
         sendResponse({
           type: "SEARCH_RESULTS",
           results: searchResults,
+          serperCredits,
           quotaUsed: 100 - remaining,
         });
       } catch (error) {

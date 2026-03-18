@@ -1,20 +1,49 @@
+import { useState } from 'react'
 import type { SearchResult } from '../../types'
 
 interface Props {
   result: SearchResult
   onOpen: (url: string) => void
+  index?: number
 }
 
-export default function ResultItem({ result, onOpen }: Props) {
+export default function ResultItem({ result, onOpen, index = 0 }: Props) {
+  const [hovered, setHovered] = useState(false)
+
   return (
     <button
       onClick={() => onOpen(result.url)}
-      className="w-full text-left px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="w-full text-left px-3 py-2.5 last:border-b-0"
+      style={{
+        backgroundColor: hovered ? "var(--bg-surface-hover)" : "var(--bg-surface)",
+        borderBottom: "1px solid var(--border-dim)",
+        animation: "fade-up 0.2s ease both",
+        animationDelay: `${index * 40}ms`,
+      }}
     >
-      <p className="text-xs font-medium text-gray-800 group-hover:text-blue-600 leading-snug mb-0.5 line-clamp-2">
+      <p
+        className="text-xs font-medium leading-snug mb-0.5 line-clamp-2 transition-colors duration-150"
+        style={{
+          color: hovered ? "var(--accent)" : "var(--text-primary)",
+          textShadow: hovered ? "var(--accent-glow)" : "none",
+        }}
+      >
         {result.title}
       </p>
-      <p className="text-xs text-gray-400">{result.domain}</p>
+      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+        {result.domain}
+      </p>
+      <p
+        className="text-xs truncate max-w-full transition-opacity duration-150"
+        style={{
+          color: "var(--accent)",
+          opacity: hovered ? 0.6 : 0,
+        }}
+      >
+        {result.url}
+      </p>
     </button>
   )
 }

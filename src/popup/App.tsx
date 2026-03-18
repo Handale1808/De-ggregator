@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getSettings, getQuota, clearSettings } from "../utils/storage";
-import type { SearchResult, QuotaData } from "../types";
+import { getSettings, clearSettings } from "../utils/storage";
+import type { SearchResult } from "../types";
 import SettingsForm from "./components/SettingsForm";
 import ResultsList from "./components/ResultsList";
 import ErrorMessage from "./components/ErrorMessage";
@@ -18,12 +18,6 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>("loading");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [error, setError] = useState("");
-  const [quota, setQuota] = useState<QuotaData>({ count: 0, date: "" });
-
-  const loadQuota = async () => {
-    const q = await getQuota();
-    setQuota(q);
-  };
 
   const runSearch = async () => {
     if (window.__searchInitiated) return;
@@ -45,7 +39,7 @@ export default function App() {
 
     chrome.runtime.sendMessage(
       { type: "SEARCH", tabId: tab.id },
-      (response) => {
+      (response: any) => {
         if (!response) {
           setError("UNKNOWN_ERROR");
           setAppState("error");
@@ -54,7 +48,7 @@ export default function App() {
 
         if (response.type === "SEARCH_RESULTS") {
           setResults(response.results);
-          loadQuota();
+          
           setAppState("results");
           return;
         }
@@ -90,7 +84,6 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
-      await loadQuota();
       const settings = await getSettings();
       if (!settings) {
         setAppState("settings");
@@ -103,10 +96,20 @@ export default function App() {
 
   if (appState === "loading" || appState === "searching") {
     return (
-      <div className="w-80 p-4 flex items-center justify-center">
+      <div
+        className="w-80 p-4 flex items-center justify-center"
+        style={{ backgroundColor: "var(--bg-base)" }}
+      >
         <div className="text-center">
-          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-gray-500">
+          <div
+            className="w-5 h-5 rounded-full mx-auto mb-2"
+            style={{
+              border: "2px solid var(--border-dim)",
+              borderTopColor: "var(--accent)",
+              animation: "spin-glow 0.8s linear infinite",
+            }}
+          />
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             {appState === "loading"
               ? "Starting up..."
               : "Searching for original article..."}
@@ -139,15 +142,23 @@ export default function App() {
   }
 
   return (
-    <div className="w-80">
-      <div className="px-3 py-2 border-b border-gray-100">
-        <h1 className="text-xs font-semibold text-gray-800">De-aggregator</h1>
-        <p className="text-xs text-gray-400">
+    <div className="w-80" style={{ backgroundColor: "var(--bg-base)" }}>
+      <div
+        className="px-3 py-2"
+        style={{ borderBottom: "1px solid var(--border-dim)" }}
+      >
+        <h1
+          className="text-xs font-semibold tracking-widest uppercase"
+          style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
+        >
+          De-aggregator
+        </h1>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           Select the original article to open
         </p>
       </div>
       <ResultsList results={results} onOpen={handleOpenUrl} />
-      <UsageCounter quota={quota} />
+      <UsageCounter />
     </div>
   );
 }

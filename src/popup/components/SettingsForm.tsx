@@ -30,16 +30,22 @@ export default function SettingsForm({ onSaved }: Props) {
   };
 
   return (
-    <div className="p-4 w-80">
-      <h1 className="text-base font-semibold text-gray-800 mb-1">
+    <div className="p-4 w-80" style={{ backgroundColor: "var(--bg-base)" }}>
+      <h1
+        className="text-sm font-semibold tracking-widest uppercase mb-1"
+        style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
+      >
         De-aggregator
       </h1>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
         Enter your Serper API token to get started
       </p>
 
       <div className="mb-3">
-        <label className="block text-xs font-medium text-gray-700 mb-1">
+        <label
+          className="block text-xs font-medium mb-1"
+          style={{ color: "var(--text-secondary)" }}
+        >
           Serper API Token
         </label>
         <input
@@ -47,21 +53,61 @@ export default function SettingsForm({ onSaved }: Props) {
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
           placeholder="Paste your Serper API Token"
-          className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-600"
+          className="w-full text-xs rounded px-2 py-1.5 focus:outline-none"
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            border: "1px solid var(--border-dim)",
+            color: "var(--text-primary)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--accent)";
+            e.currentTarget.style.boxShadow = "var(--accent-glow)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-dim)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
       </div>
 
-      {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+      {error && (
+        <p
+          className="text-xs mb-3"
+          style={{ color: "var(--danger)", textShadow: "var(--danger-glow)" }}
+        >
+          {error}
+        </p>
+      )}
 
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-blue-600 text-white text-xs font-medium py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        className="w-full text-xs font-medium py-2 rounded disabled:opacity-40 transition-all duration-150"
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          border: "1px solid var(--accent)",
+          color: "var(--accent)",
+          boxShadow: "var(--accent-glow)",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+            "var(--accent)";
+          (e.currentTarget as HTMLButtonElement).style.color = "var(--bg-base)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow =
+            "var(--accent-glow-strong)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+            "var(--bg-surface)";
+          (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow =
+            "var(--accent-glow)";
+        }}
       >
         {saving ? "Saving..." : "Save and continue"}
       </button>
 
-      <p className="text-xs text-gray-400 mt-3">
+      <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
         Your API key is stored locally and never shared.
       </p>
     </div>
