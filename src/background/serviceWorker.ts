@@ -17,7 +17,11 @@ const searchGoogle = async (
 
   if (response.status === 401) throw new Error("INVALID_KEY");
   if (response.status === 429) throw new Error("QUOTA_EXCEEDED");
-  if (!response.ok) throw new Error("SEARCH_FAILED");
+  if (!response.ok) {
+    const text = await response.text();
+    console.log("Serper error status:", response.status, "body:", text);
+    throw new Error("SEARCH_FAILED");
+  }
 
   const data = await response.json();
 
@@ -32,7 +36,7 @@ const searchGoogle = async (
     }));
 };
 
-const extractFromPage = () => {
+const extractFromPage = async () => {
   const SUPPORTED = [
     "news.yahoo.com",
     "www.yahoo.com",
@@ -59,15 +63,30 @@ const extractFromPage = () => {
   const hostname = window.location.hostname;
   if (!SUPPORTED.includes(hostname)) return null;
 
+  const isMsn = hostname.includes("msn.com");
+
+  if (isMsn) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const providerEl = document.querySelector('[data-t*="c.hl"]');
+    if (providerEl) {
+      try {
+        const dataT = JSON.parse(providerEl.getAttribute("data-t") ?? "{}");
+        const headline = (dataT["c.hl"] as string | undefined)?.trim() ?? "";
+        const publisher = (dataT["c.b"] as string | undefined)?.trim() ?? "";
+
+        return { headline, publisher };
+      } catch {
+        // fall through to generic extraction
+      }
+    }
+  }
+
   const h1Elements = document.querySelectorAll("h1");
   let headline = "";
-
-  // Find the longest h1 as it's most likely to be the article headline
   h1Elements.forEach((el) => {
     const text = el.textContent?.trim() ?? "";
-    if (text.length > headline.length) {
-      headline = text;
-    }
+    if (text.length > headline.length) headline = text;
   });
 
   if (!headline || headline.length < 10) {
@@ -82,7 +101,6 @@ const extractFromPage = () => {
   const meta = document.querySelector('meta[property="og:site_name"]');
   const metaContent = meta?.getAttribute("content") ?? "";
   const metaLower = metaContent.toLowerCase();
-
   const aggregatorNames = [
     "yahoo",
     "msn",
@@ -111,7 +129,8 @@ const extractFromPage = () => {
     if (href) {
       try {
         const u = new URL(href);
-        if (!u.hostname.includes(hostname.replace("www.", "").split(".")[0])) {
+        const hostBase = hostname.replace("www.", "").split(".")[0];
+        if (!u.hostname.includes(hostBase)) {
           publisher = u.hostname.replace("www.", "");
         }
       } catch {
@@ -133,7 +152,6 @@ chrome.runtime.onMessage.addListener(
     (async () => {
       try {
         const settings = await getSettings();
-        console.log("Settings retrieved:", JSON.stringify(settings));
         if (!settings) {
           sendResponse({ type: "SEARCH_ERROR", error: "NO_SETTINGS" });
           return;
@@ -142,6 +160,7 @@ chrome.runtime.onMessage.addListener(
         const results = await chrome.scripting.executeScript({
           target: { tabId },
           func: extractFromPage,
+          world: "MAIN",
         });
 
         console.log("Script execution results:", JSON.stringify(results));
@@ -158,11 +177,22 @@ chrome.runtime.onMessage.addListener(
           return;
         }
 
-        const query = extracted.publisher
-          ? `${extracted.headline} ${extracted.publisher}`
-          : extracted.headline;
+        const normalisedPublisher = extracted.publisher
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
 
-        const searchResults = await searchGoogle(query, settings.apiKey);
+        const quotedQuery = normalisedPublisher
+          ? `"${extracted.headline}" "${normalisedPublisher}"`
+          : `"${extracted.headline}"`;
+
+        let searchResults = await searchGoogle(quotedQuery, settings.apiKey);
+
+        if (searchResults.length === 0) {
+          const fallbackQuery = normalisedPublisher
+            ? `${extracted.headline} ${normalisedPublisher}`
+            : extracted.headline;
+          searchResults = await searchGoogle(fallbackQuery, settings.apiKey);
+        }
 
         await incrementQuota();
         const remaining = await getRemainingQuota();
