@@ -2,20 +2,14 @@
   "manifest_version": 3,
   "name": "De-aggregator",
   "version": "1.0.0",
-  "description": "Because clicking through Yahoo wasn't part of the plan",
+  "description": "Find the original source of aggregated news articles",
   "action": {
-    "default_popup": "src/popup/index.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_popup": "src/popup/index.html"
   },
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
-  "content_scripts": [],
   "permissions": [
     "storage",
     "activeTab",
@@ -24,10 +18,5 @@
   ],
   "host_permissions": [
     "https://www.googleapis.com/*"
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+  ]
 }

@@ -63,7 +63,7 @@ chrome.runtime.onMessage.addListener((message: MessageType, _sender, sendRespons
         files: ['content.js'],
       })
 
-      const extracted = results?.[0]?.result
+      const extracted = results?.[0]?.result as { headline: string; publisher: string } | null
 
       if (!extracted) {
         sendResponse({ type: 'NOT_SUPPORTED' })

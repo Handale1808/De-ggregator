@@ -25,8 +25,8 @@ export const getQuota = (): Promise<QuotaData> => {
   return new Promise((resolve) => {
     chrome.storage.local.get(['quotaCount', 'quotaDate'], (result) => {
       resolve({
-        count: result.quotaCount ?? 0,
-        date: result.quotaDate ?? '',
+        count: (result.quotaCount as number) ?? 0,
+        date: (result.quotaDate as string) ?? '',
       })
     })
   })
