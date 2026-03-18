@@ -32,6 +32,37 @@ const searchSerper = async (
     }));
 };
 
+const getCachedResults = async (
+  headline: string,
+): Promise<SearchResult[] | null> => {
+  const key = `cache_${headline.slice(0, 100)}`;
+  const stored = await chrome.storage.local.get(key);
+  if (!stored[key]) return null;
+
+  const { results, timestamp } = stored[key] as {
+    results: SearchResult[];
+    timestamp: number;
+  };
+
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  if (Date.now() - timestamp > oneDayMs) {
+    await chrome.storage.local.remove(key);
+    return null;
+  }
+
+  return results;
+};
+
+const setCachedResults = async (
+  headline: string,
+  results: SearchResult[],
+): Promise<void> => {
+  const key = `cache_${headline.slice(0, 100)}`;
+  await chrome.storage.local.set({
+    [key]: { results, timestamp: Date.now() },
+  });
+};
+
 const extractFromPage = async () => {
   const SUPPORTED = [
     "news.yahoo.com",
@@ -181,6 +212,17 @@ chrome.runtime.onMessage.addListener(
           ? `"${extracted.headline}" "${normalisedPublisher}"`
           : `"${extracted.headline}"`;
 
+        const cached = await getCachedResults(extracted.headline);
+
+        if (cached) {
+          sendResponse({
+            type: "SEARCH_RESULTS",
+            results: cached,
+            quotaUsed: 100 - (await getRemainingQuota()),
+          });
+          return;
+        }
+
         let searchResults = await searchSerper(quotedQuery, settings.apiKey);
 
         if (searchResults.length === 0) {
@@ -188,6 +230,10 @@ chrome.runtime.onMessage.addListener(
             ? `${extracted.headline} ${normalisedPublisher}`
             : extracted.headline;
           searchResults = await searchSerper(fallbackQuery, settings.apiKey);
+        }
+
+        if (searchResults.length > 0) {
+          await setCachedResults(extracted.headline, searchResults);
         }
 
         await incrementQuota();

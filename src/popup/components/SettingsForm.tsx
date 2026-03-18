@@ -35,18 +35,18 @@ export default function SettingsForm({ onSaved }: Props) {
         De-aggregator
       </h1>
       <p className="text-xs text-gray-500 mb-4">
-        Enter your Serper.dev API key to get started.
+        Enter your Serper API token to get started
       </p>
 
       <div className="mb-3">
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Serper API Key
+          Serper API Token
         </label>
         <input
           type="text"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="Paste your Serper API Key"
+          placeholder="Paste your Serper API Token"
           className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-600"
         />
       </div>
