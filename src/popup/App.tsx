@@ -228,7 +228,7 @@ export default function App() {
             className="text-xs font-semibold tracking-widest uppercase"
             style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
           >
-            De-aggregator
+            De-ggregator
           </h1>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             Because fuck searching yourself
@@ -254,7 +254,7 @@ export default function App() {
             className="text-xs font-semibold tracking-widest uppercase"
             style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
           >
-            De-aggregator
+            De-ggregator
           </h1>
         </div>
         <SearchPrompt
@@ -275,7 +275,7 @@ export default function App() {
           className="text-xs font-semibold tracking-widest uppercase"
           style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
         >
-          De-aggregator
+          De-ggregator
         </h1>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           Select the original article to open

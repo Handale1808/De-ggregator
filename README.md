@@ -1,6 +1,6 @@
-# De-aggregator
+# De-ggregator
 
-A Chrome extension that finds the original source article when you're reading news on an aggregator site. Instead of staying trapped on Yahoo News, MSN, AOL, or NewsBreak, De-aggregator surfaces the original publisher's page in one click.
+A Chrome extension that finds the original source article when you're reading news on an aggregator site. Instead of staying trapped on Yahoo News, MSN, AOL, or NewsBreak, De-ggregator surfaces the original publisher's page in one click.
 
 ---
 
@@ -26,7 +26,7 @@ A Chrome extension that finds the original source article when you're reading ne
 
 ### API key setup
 
-De-aggregator uses the [Serper](https://serper.dev) API for web searches. You get 2,500 free credits on signup.
+De-ggregator uses the [Serper](https://serper.dev) API for web searches. You get 2,500 free credits on signup.
 
 1. Sign up at [serper.dev](https://serper.dev) and copy your API key
 2. Open the extension — it will prompt you for the key on first use
@@ -39,7 +39,7 @@ Your key is stored locally in `chrome.storage.local` and never sent anywhere exc
 ## Usage
 
 1. Navigate to a news article on any supported aggregator
-2. Click the De-aggregator icon in your toolbar
+2. Click the De-ggregator icon in your toolbar
 3. The extension will attempt to find the original article automatically
 
 **If a direct source link is found** — it appears immediately. Click to open it.
