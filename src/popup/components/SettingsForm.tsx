@@ -37,7 +37,7 @@ export default function SettingsForm({ onSaved }: Props) {
         className="text-sm font-semibold tracking-widest uppercase mb-1"
         style={{ color: "var(--accent)", textShadow: "var(--accent-glow)" }}
       >
-        De-aggregator
+        De-ggregator
       </h1>
       <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
         Enter your Serper API token to get started

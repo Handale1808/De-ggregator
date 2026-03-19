@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "De-aggregator",
+  "name": "De-ggregator",
   "version": "1.0.0",
   "description": "Find the original source of aggregated news articles",
   "icons": {
