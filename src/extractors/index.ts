@@ -4,6 +4,7 @@ import { extractYahoo } from "./yahoo";
 import { extractMsn } from "./msn";
 import { extractAol } from "./aol";
 import { extractNewsBreak } from "./newsbreak";
+import { extractApNews } from "./apnews";
 
 const EXTRACTOR_MAP: Record<string, () => string> = {
   "news.yahoo.com": extractYahoo,
@@ -32,7 +33,8 @@ const EXTRACTOR_MAP: Record<string, () => string> = {
   "aol.com": extractAol,
   "www.newsbreak.com": extractNewsBreak,
   "newsbreak.com": extractNewsBreak,
-  //add assosicated press
+  "apnews.com": extractApNews,
+  "ap.org": extractApNews,
 };
 
 export const isSupportedSite = (hostname: string): boolean => {
