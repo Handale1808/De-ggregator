@@ -21,5 +21,13 @@
     "type": "module"
   },
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
-  "host_permissions": ["https://google.serper.dev/*"]
+  "host_permissions": [
+  "https://google.serper.dev/*",
+  "https://*.yahoo.com/*",
+  "https://*.msn.com/*",
+  "https://*.aol.com/*",
+  "https://*.newsbreak.com/*",
+  "https://apnews.com/*",
+  "https://*.ap.org/*"
+]
 }
