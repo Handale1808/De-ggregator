@@ -13,6 +13,13 @@ export default function ErrorMessage({
 }: Props) {
   const getMessage = () => {
     switch (error) {
+      case "INJECTION_FAILED":
+        return {
+          title: "Can't read this page",
+          body: "The extension doesn't have permission to read this page, or the page blocks content scripts. Check the extension's site permissions.",
+          primaryAction: null,
+          showSettingsLink: false,
+        };
       case "QUOTA_EXCEEDED":
         return {
           title: "Daily limit reached",

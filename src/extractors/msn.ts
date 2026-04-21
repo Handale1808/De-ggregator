@@ -22,7 +22,7 @@ export const extractMsn = (): string => {
   const meta = document.querySelector('meta[property="og:site_name"]');
   if (meta) {
     const content = meta.getAttribute('content');
-    if (content && content.toLowerCase() !== 'msn') {
+    if (content && !content.toLowerCase().includes('msn')) {
       return content;
     }
   }

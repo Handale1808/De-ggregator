@@ -13,9 +13,7 @@ const EXTRACTOR_MAP: Record<string, () => string> = {
   "health.yahoo.com": extractYahoo,
   "finance.yahoo.com": extractYahoo,
   "www.yahoo.com/news": extractYahoo,
-  "sports.yahoo.com": extractYahoo,
-  "entertainment.yahoo.com": extractYahoo, // redirects under main yahoo
-  "style.yahoo.com": extractYahoo,
+  "entertainment.yahoo.com": extractYahoo,
   "tech.yahoo.com": extractYahoo,
   "food.yahoo.com": extractYahoo,
   "movies.yahoo.com": extractYahoo,

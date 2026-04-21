@@ -61,19 +61,51 @@ chrome.runtime.onMessage.addListener(
           return;
         }
 
-        await chrome.scripting.executeScript({
+        // Read first. If the content script already ran on this tab for this URL,
+        // reuse the cached result — reinjecting causes top-level identifier
+        // redeclaration SyntaxErrors in the MAIN world because `window` persists
+        // across SPA navigations.
+        let readResults = await chrome.scripting.executeScript({
           target: { tabId },
-          files: ["content.js"],
+          func: () => {
+            const w = window as Window & {
+              __deaggResult?: unknown;
+              __deaggUrl?: string;
+            };
+            if (w.__deaggUrl !== location.href) return null;
+            return w.__deaggResult ?? null;
+          },
           world: "MAIN",
         });
 
-        const readResults = await chrome.scripting.executeScript({
-          target: { tabId },
-          func: () =>
-            (window as Window & { __deaggResult?: unknown }).__deaggResult ??
-            null,
-          world: "MAIN",
-        });
+        if (!readResults?.[0]?.result) {
+          try {
+            await chrome.scripting.executeScript({
+              target: { tabId },
+              files: ["content.js"],
+              world: "MAIN",
+            });
+          } catch (err) {
+            console.error("[deagg] content.js injection failed", err);
+            sendResponse({
+              type: "SEARCH_ERROR",
+              error: "INJECTION_FAILED",
+            });
+            return;
+          }
+
+          readResults = await chrome.scripting.executeScript({
+            target: { tabId },
+            func: () =>
+              (window as Window & { __deaggResult?: unknown }).__deaggResult ??
+              null,
+            world: "MAIN",
+          });
+        }
+
+        console.log("[deagg] readResults", readResults);
+
+        console.log("[deagg] readResults", readResults);
 
         const extracted = readResults?.[0]?.result as {
           headline: string;
